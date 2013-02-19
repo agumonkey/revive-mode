@@ -54,30 +54,26 @@
 
 ;;;###autoload
 (defun emacs-save-layout ()
-  "save the frame and window layout to ~/.layout. Requires revive.el."
+  "save the frame and window layout to (revive-config). Requires revive.el."
   (interactive)
   (let ((out-name (revive-config))
-        (frames (frame-list))
-        (configs nil)
-        (buffs (buffer-list))
-        (filtered-buffs nil)
-        (s-buffs nil))
-    (dolist (b buffs)
-      (let ((file-name (buffer-file-name b)))
-        (when (and file-name
-                   (> (length file-name) 0))
-          (setq filtered-buffs (cons file-name filtered-buffs)))))
-    (when filtered-buffs (setq filtered-buffs (reverse filtered-buffs)))
-    (dolist (frame frames)
-      (select-frame frame)
-      (setq configs (cons (current-window-configuration-printable) configs)))
-    (setq configs (cons filtered-buffs configs))
-    (write-region (with-output-to-string (prin1 configs)) nil out-name)))
+        (buff-names (mapcar (lambda (b) (buffer-file-name b))
+                                (buffer-list)))
+        (frames-cfg (mapcar (lambda (f) (progn
+                                  (select-frame f)
+                                  (current-window-configuration-printable)))
+                         (frame-list))))
+    (write-region
+     (with-output-to-string
+       (prin1 (cons
+               (remove-if nil buff-names)
+               frames-cfg)))
+     nil out-name)))
 
 
 ;;;###autoload
 (defun emacs-load-layout ()
-  "Load the layout saved by emacs-save-layout. Requires revive.el."
+  "Load the layout saved by emacs-save-layout aka (revive-config). Requires revive.el."
   (interactive)
   (let* ((in-name (revive-config))
          (config-count 0)
