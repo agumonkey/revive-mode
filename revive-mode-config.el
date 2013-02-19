@@ -33,14 +33,30 @@
 (autoload 'current-window-configuration-printable "revive")
 
 
-;;; From: http://stormcoders.blogspot.com/2007/11/restoring-emacs-layout.html
+;;; From:
+;;; http://stormcoders.blogspot.com/2007/11/restoring-emacs-layout.html
+(defgroup revive nil
+  "Persist windows layout in a file"
+  :group 'convenience)
 
+(defcustom revive-directory "."
+  "directory to dump the layout description"
+  :type 'string
+  :group 'revive)
+
+(defcustom revive-filename ".layout"
+  "name of the file with the layout description"
+  :type 'string
+  :group 'revive)
+
+(defun revive-config ()
+  (mapconcat 'identity (list revive-directory revive-filename) "/"))
 
 ;;;###autoload
 (defun emacs-save-layout ()
   "save the frame and window layout to ~/.layout. Requires revive.el."
   (interactive)
-  (let ((out-name '"~/.layout")
+  (let ((out-name (revive-config))
         (frames (frame-list))
         (configs nil)
         (buffs (buffer-list))
@@ -63,7 +79,7 @@
 (defun emacs-load-layout ()
   "Load the layout saved by emacs-save-layout. Requires revive.el."
   (interactive)
-  (let* ((in-name '"~/.layout")
+  (let* ((in-name (revive-config))
          (config-count 0)
          (frames (frame-list))
          (configs nil)
